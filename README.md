@@ -232,15 +232,13 @@ VANGAURD PROJECT/
 │   └── package.json                # Frontend NPM dependencies & scripts
 │
 ├── docs/                           # Project Documentation
-│   ├── mathematical-formulations.md # Unified LaTeX Mathematical Formulation Document
-│   └── mathematical_formulation.md  # Reference Documentation
-│
+│   ├── mathematical-formulations.md  #Mathematical Formulation Document
+│   
 ├── project-presentation/           # Submission Presentation Deliverables
 │   ├── Presentation.pdf            # Official 9-Slide Q-MAT Presentation PDF
 │   ├── README.md                   # Presentation Overview
 │   ├── charts/                     # High-Resolution Presentation Charts
 │   ├── diagrams/                   # Architecture & Workflow Diagrams
-│   └── screenshots/                # Slide 1 to 9 High-Res Renderings
 │
 ├── generate_presentation.py        # Python Presentation & Asset Generator Script
 └── README.md                       # Project Master README (This File)
@@ -541,7 +539,7 @@ The official presentation artifacts are located in the [`project-presentation/`]
 
 Submitted for the **WISER VANGUARD CHALLENGE 2026**:
 
-- **Vishal Dhanure** — *Team Lead & Senior Quantum Software Architect*
+- **Vishal Dhanure** — *Team Lead*
 - **Lumbini Devi** — *Financial Analyst & Quantitative Engineer*
 - **Yamini** — *Quantum Algorithms Researcher*
 
