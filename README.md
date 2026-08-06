@@ -395,7 +395,7 @@ For complete mathematical derivations, proofs, and symbol glossaries, refer to t
 ### 1. Clone the Repository
 ```bash
 git clone https://github.com/vanguard-quantum/q-mat-terminal.git
-cd "VANGAURD PROJECT"
+cd "vanguard-quantum-portfolio-intelligence"
 ```
 
 ---
