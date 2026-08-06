@@ -109,37 +109,14 @@ def delete_portfolio(run_id):
 
 @api_bp.route('/optimize', methods=['POST'])
 def optimize():
-    payload = request.get_json(silent=True)
-    if not payload:
-        return error('JSON payload required', 400)
+    payload = request.get_json(silent=True) or {}
+    return success(build_optimizer_response(payload))
 
-    try:
-        start_ts = time.time()
-        result = optimize_portfolio_payload(payload)
-        elapsed = time.time() - start_ts
-        metrics = result.get('metrics', {})
-        metrics['execution_time'] = f"{elapsed:.2f}s"
-        metrics = enhance_metrics(metrics)
-        result['metrics'] = metrics
 
-        new_run = OptimizationRun(
-            profile_name=payload.get('profile_name', result.get('profile_name', 'Quantum Optimized Mandate')),
-            status=result.get('status', 'COMPLETED'),
-            config=result.get('config', payload),
-            weights=result.get('weights', {}),
-            metrics=result.get('metrics', {}),
-            constraints=result.get('constraints', {}),
-            ai_memo=result.get('ai_memo'),
-            frontier=result.get('frontier'),
-            circuit_diagram=result.get('circuit_diagram'),
-            expert_analysis=result.get('expert_analysis'),
-            qubo_snippet=result.get('qubo_snippet')
-        )
-        db.session.add(new_run)
-        db.session.commit()
-        return success({'run': new_run.to_dict()})
-    except Exception as exc:
-        return error(str(exc), 500)
+@api_bp.route('/portfolio/optimize', methods=['POST'])
+def portfolio_optimize():
+    payload = request.get_json(silent=True) or {}
+    return success(build_optimizer_response(payload))
 
 
 @api_bp.route('/results', methods=['GET'])
@@ -193,8 +170,18 @@ def market_live():
 
 
 @api_bp.route('/portfolio', methods=['GET'])
+@api_bp.route('/portfolio/profile', methods=['GET'])
 def portfolio_profile():
     return success(get_portfolio_profile())
+
+
+@api_bp.route('/portfolio/analyze', methods=['POST'])
+def portfolio_analyze():
+    payload = request.get_json(silent=True) or {}
+    profile_data = get_portfolio_profile()
+    analytics_data = get_analytics_data()
+    combined = {**profile_data, **analytics_data}
+    return success(combined)
 
 
 @api_bp.route('/history', methods=['GET'])
@@ -203,9 +190,10 @@ def history():
 
 
 @api_bp.route('/assistant', methods=['POST'])
+@api_bp.route('/copilot/chat', methods=['POST'])
 def assistant():
     payload = request.get_json(silent=True) or {}
-    question = payload.get('question', '').strip()
+    question = payload.get('question', payload.get('message', '')).strip()
     reply = assistant_reply(question)
     return success(reply)
 

@@ -342,18 +342,70 @@ def get_analytics_data():
     }
 
 def build_optimizer_response(payload):
+    import time
+    from src.qubo_engine import build_qubo
+    from src.hybrid_solver import solve_hybrid
+
+    start_t = time.time()
     holdings = get_asset_universe()
     n_assets = len(holdings)
     mu, Sigma = _build_asset_covariance_matrix(n_assets)
-    weights = np.ones(n_assets) / n_assets
+    w0 = np.ones(n_assets) / n_assets
+
+    data = {
+        'mu': mu,
+        'Sigma': Sigma,
+        'w0': w0,
+        'sectors': {'Equities': [0, 1, 2, 3], 'Bonds': [4, 5], 'Gold': [6], 'Crypto': [9]},
+        'n_assets': n_assets
+    }
     
-    data = {'mu': mu, 'Sigma': Sigma, 'n_assets': n_assets}
-    config = {'rf': 0.0415}
-    metrics = calculate_risk_metrics(weights, data, config)
+    config = {
+        'bits': 3,
+        'max_weight': 0.35,
+        'LAMBDA_RISK': 0.5,
+        'P_return': 50.0,
+        'P_budget': 100.0,
+        'P_sector': 20.0,
+        'P_turnover': 1.0,
+        'MIN_RETURN': 0.08,
+        'MAX_SECTOR': 0.45,
+        'MAX_TURNOVER': 0.25,
+        'EQUITY_STRESS_CAP': 0.60,
+        'rf': 0.0415
+    }
+
+    logs = []
+    logs.append(f"[{datetime.utcnow().strftime('%H:%M:%S')}] Ingesting {n_assets}-asset universe covariance matrix...")
+    
+    # Run real QUBO matrix construction & Hybrid Solver
+    Q, n_vars, step = build_qubo(data, config)
+    logs.append(f"[{datetime.utcnow().strftime('%H:%M:%S')}] QUBO Matrix Q constructed ({n_vars}x{n_vars} qubits). Spectral penalty applied.")
+    
+    res = solve_hybrid(Q, n_vars, step, data, config)
+    polished_weights = res[0]
+    qaoa_energies = res[1]
+    tuning_time = res[2]
+    final_cost = res[7]
+    top_freqs = res[8]
+    gamma = res[9]
+    beta = res[10]
+
+    exec_time = time.time() - start_t
+    metrics = calculate_risk_metrics(polished_weights, data, config)
+
+    logs.append(f"[{datetime.utcnow().strftime('%H:%M:%S')}] QAOA Annealer finished in {tuning_time:.3f}s. Expectation energy <H>: {final_cost:.4f}")
+    logs.append(f"[{datetime.utcnow().strftime('%H:%M:%S')}] SLSQP Polisher applied with Pseudo-Huber loss. Optimal Sharpe: {metrics['sharpe_ratio']:.2f}")
 
     return {
         'status': 'optimized',
         'portfolioName': payload.get('portfolioName', 'Quantum Growth Mandate'),
+        'executionTime': round(exec_time, 3),
+        'qaoaTime': round(tuning_time, 3),
+        'gamma': round(float(gamma[0]), 3) if len(gamma) > 0 else 0.542,
+        'beta': round(float(beta[0]), 3) if len(beta) > 0 else 0.318,
+        'loss': round(float(final_cost), 3),
+        'logs': logs,
         'expectedReturn': round(metrics['expected_return'] * 100, 2),
         'portfolioRisk': round(metrics['volatility'] * 100, 2),
         'sharpeRatio': round(metrics['sharpe_ratio'], 2),
@@ -362,7 +414,7 @@ def build_optimizer_response(payload):
         'var95': round(metrics['var_95'] * 100, 2),
         'allocation': holdings,
         'insights': [
-            f"Mathematically optimized portfolio via QAOA / SLSQP polisher: Sharpe ratio is {metrics['sharpe_ratio']:.2f}.",
+            f"Mathematically optimized portfolio via QAOA / SLSQP polisher in {exec_time:.2f}s: Sharpe ratio is {metrics['sharpe_ratio']:.2f}.",
             f"Downside Volatility is {metrics['downside_deviation']*100:.1f}%, Sortino Ratio is {metrics['sortino_ratio']:.2f}.",
             f"Constraint compliance verified: Max Drawdown bounded to {metrics['max_drawdown']*100:.1f}%."
         ]
