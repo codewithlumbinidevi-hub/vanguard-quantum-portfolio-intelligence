@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Optimization</h2>
+<p>Use the form below to run a new optimization using the research engine.</p>
+<form id="opt-form" method="post" action="/api/optimize">
+  <div class="row g-3">
+    <div class="col-md-4">
+      <label class="form-label">Profile Name</label>
+      <input class="form-control" name="profile_name" value="Web API Run">
+    </div>
+    <div class="col-md-2">
+      <label class="form-label">Risk Lambda</label>
+      <input class="form-control" name="lambda" value="5.0">
+    </div>
+    <div class="col-md-2">
+      <label class="form-label">Max Turnover</label>
+      <input class="form-control" name="max_turnover" value="0.15">
+    </div>
+    <div class="col-md-4 d-flex align-items-end">
+      <button type="button" id="run-opt" class="btn btn-success">Execute Optimization</button>
+    </div>
+  </div>
+</form>
+
+<div id="opt-result" class="mt-4"></div>
+
+<script>
+document.getElementById('run-opt').addEventListener('click', async function(){
+  const form = document.getElementById('opt-form');
+  const fd = new FormData(form);
+  const payload = Object.fromEntries(fd.entries());
+  document.getElementById('run-opt').disabled = true;
+  document.getElementById('run-opt').innerText = 'Running...';
+  const res = await fetch('/api/optimize', {method:'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(payload)});
+  const json = await res.json();
+  document.getElementById('opt-result').innerText = JSON.stringify(json, null, 2);
+  document.getElementById('run-opt').disabled = false;
+  document.getElementById('run-opt').innerText = 'Execute Optimization';
+});
+</script>
+
+{% endblock %}

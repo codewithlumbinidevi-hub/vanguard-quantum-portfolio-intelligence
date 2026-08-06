@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2 class="mb-3">Dashboard</h2>
+<div class="row g-3">
+  <div class="col-md-3">
+    <div class="card bg-dark-alt p-3 text-white">
+      <h6>Expected Return</h6>
+      <div class="display-6">12.4%</div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card bg-dark-alt p-3 text-white">
+      <h6>Portfolio Risk</h6>
+      <div class="display-6">8.9%</div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card bg-dark-alt p-3 text-white">
+      <h6>Sharpe Ratio</h6>
+      <div class="display-6">1.42</div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card bg-dark-alt p-3 text-white">
+      <h6>Volatility</h6>
+      <div class="display-6">7.1%</div>
+    </div>
+  </div>
+</div>
+
+<div class="row mt-4">
+  <div class="col-md-8">
+    <div class="card p-3 bg-secondary text-white">
+      <h5>Efficient Frontier</h5>
+      <img src="/static/images/efficient_frontier.png" class="img-fluid">
+    </div>
+  </div>
+  <div class="col-md-4">
+    <div class="card p-3 bg-secondary text-white">
+      <h5>Asset Allocation</h5>
+      <img src="/static/images/asset_allocation.png" class="img-fluid">
+    </div>
+  </div>
+</div>
+
+<div class="row mt-4">
+  <div class="col-md-6">
+    <div class="card p-3 bg-secondary text-white">
+      <h5>Covariance Heatmap</h5>
+      <img src="/static/images/covariance_heatmap.png" class="img-fluid">
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="card p-3 bg-secondary text-white">
+      <h5>Risk vs Return Scatter</h5>
+      <img src="/static/images/risk_return_scatter.png" class="img-fluid">
+    </div>
+  </div>
+</div>
+{% endblock %}

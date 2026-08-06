@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% block title %}About | Quantum Portfolio Optimization{% endblock %}
+{% block content %}
+<div class="row g-4" id="about-section">
+    <div class="col-lg-8">
+        <div class="glass-card p-4 rounded-4">
+            <h2 class="fw-bold mb-3">About the Platform</h2>
+            <p class="text-muted">This frontend is designed for a production-grade quantum-enhanced portfolio optimization workflow that can sit on top of a Flask backend. It presents institutional-grade views for portfolio construction, optimization execution, results analysis, and risk interpretation without implementing the numerical optimization itself.</p>
+            <p class="text-muted">The experience is tailored for allocators and research teams evaluating multi-asset strategies, realistic constraints, and advanced scenario analysis.</p>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="glass-card p-4 rounded-4">
+            <h5 class="fw-semibold mb-3">Platform Capabilities</h5>
+            <ul class="mb-0 text-muted">
+                <li>Flask-compatible route structure</li>
+                <li>Bootstrap-based responsive UI</li>
+                <li>Chart.js visualizations</li>
+                <li>Fetch-based API integration scaffolding</li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}

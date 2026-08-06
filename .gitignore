@@ -1,0 +1,49 @@
+# Python
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.sqlite3
+*.db-journal
+.pytest_cache/
+.mypy_cache/
+
+# Environment
+.env
+.env.*
+
+# Node
+node_modules/
+dist/
+build/
+.next/
+.cache/
+
+# VS Code
+.vscode/
+.idea/
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Python
+*.pyo
+*.pyd
+
+# Coverage
+.coverage
+htmlcov/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Temporary
+temp/
+tmp/
+
+# Mac/Linux
+*.swp

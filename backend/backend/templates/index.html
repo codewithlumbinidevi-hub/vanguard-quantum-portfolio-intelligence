@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+{% block title %}Quantum Portfolio Optimization | Home{% endblock %}
+{% block content %}
+<section class="hero glass-card p-5 p-lg-6 rounded-4">
+    <div class="quantum-orbit"></div>
+    <div class="row align-items-center g-5">
+        <div class="col-lg-7">
+            <span class="badge-soft mb-3">AI + Quantum Optimization for Institutional Allocation</span>
+            <h1 class="display-4 fw-bold mb-3">Quantum Multi-Asset Portfolio Optimization</h1>
+            <p class="lead text-muted mb-4">Enterprise-ready portfolio construction for multi-asset mandates with explainable optimization, institutional risk controls, and quantum-enhanced scenario analysis.</p>
+            <div class="d-flex gap-3 flex-wrap mb-4">
+                <a href="{{ url_for('view.portfolio') }}" class="btn btn-primary btn-lg">Start Optimization</a>
+                <a href="{{ url_for('view.dashboard') }}" class="btn btn-outline-light btn-lg">View Dashboard</a>
+                <a href="{{ url_for('view.about') }}#about-section" class="btn btn-link text-light">Learn More</a>
+            </div>
+            <div class="hero-metrics row g-3">
+                <div class="col-sm-4"><div class="metric-pill"><strong>+18.6%</strong><span>Quantum Advantage</span></div></div>
+                <div class="col-sm-4"><div class="metric-pill"><strong>91</strong><span>Diversification</span></div></div>
+                <div class="col-sm-4"><div class="metric-pill"><strong>14.8%</strong><span>Expected Return</span></div></div>
+            </div>
+        </div>
+        <div class="col-lg-5">
+            <div class="hero-panel p-4 rounded-4">
+                <h5 class="fw-semibold mb-3">Portfolio Intelligence</h5>
+                <div class="d-flex justify-content-between mb-2"><span>Signal Strength</span><strong>+91%</strong></div>
+                <div class="progress mb-3"><div class="progress-bar" style="width:91%"></div></div>
+                <div class="d-flex justify-content-between mb-2"><span>Risk Controls</span><strong>Optimized</strong></div>
+                <div class="progress mb-3"><div class="progress-bar bg-success" style="width:78%"></div></div>
+                <div class="d-flex justify-content-between"><span>Constraint Satisfaction</span><strong>98.7%</strong></div>
+            </div>
+        </div>
+    </div>
+</section>
+<section class="row g-4 mt-4">
+    <div class="col-md-4"><div class="glass-card p-4 rounded-4 h-100"><h5 class="fw-semibold mb-2">Institutional Workflow</h5><p class="text-muted mb-0">Structured mandates, multi-stage execution, and governance-ready explainability for portfolio teams.</p></div></div>
+    <div class="col-md-4"><div class="glass-card p-4 rounded-4 h-100"><h5 class="fw-semibold mb-2">Multi-Asset Coverage</h5><p class="text-muted mb-0">Equities, ETFs, fixed income, commodities, crypto, currencies, and real estate allocations in one workflow.</p></div></div>
+    <div class="col-md-4"><div class="glass-card p-4 rounded-4 h-100"><h5 class="fw-semibold mb-2">Analytics-Ready</h5><p class="text-muted mb-0">Scenario, stress, Monte Carlo, and report generation designed for institutional review.</p></div></div>
+</section>
+<section class="row g-4 mt-4">
+    <div class="col-12">
+        <div class="glass-card p-4 rounded-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <div>
+                    <p class="text-muted mb-1">AI Financial Co-Pilot</p>
+                    <h3 class="fw-bold mb-0">Ask the AI assistant for portfolio guidance</h3>
+                </div>
+                <span class="badge-soft">Connected</span>
+            </div>
+            <div class="input-group mb-3">
+                <input id="assistantQuestion" type="text" class="form-control" placeholder="Ask about risk, allocation, or quantum advantage" />
+                <button id="assistantAskBtn" class="btn btn-primary">Ask</button>
+            </div>
+            <div id="assistantResponse" class="text-muted">AI responses appear here.</div>
+        </div>
+    </div>
+</section>
+{% endblock %}

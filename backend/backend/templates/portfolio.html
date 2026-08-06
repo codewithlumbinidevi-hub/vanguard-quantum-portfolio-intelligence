@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% block title %}Portfolio Input | Quantum Portfolio Optimization{% endblock %}
+{% block content %}
+<div class="row g-4">
+    <div class="col-lg-8">
+        <div class="glass-card p-4 rounded-4">
+            <h2 class="fw-bold mb-2">Portfolio Builder</h2>
+            <p class="text-muted mb-4">Institutional workflow for defining mandate objectives, risk tolerance, constraints, and asset selection before submitting to the optimization engine.</p>
+            <form id="portfolioForm" class="row g-3">
+                <div class="col-md-6"><label class="form-label">Portfolio Name</label><input class="form-control" name="portfolioName" value="Quantum Growth Mandate"></div>
+                <div class="col-md-6"><label class="form-label">Investment Amount</label><input class="form-control" name="investmentAmount" type="number" value="5000000"></div>
+                <div class="col-md-6"><label class="form-label">Investment Objective</label><select class="form-select" name="objective"><option>Growth</option><option>Income</option><option selected>Balanced</option><option>Capital Preservation</option></select></div>
+                <div class="col-md-6"><label class="form-label">Risk Preference</label><select class="form-select" name="riskPreference"><option>Very Low</option><option>Low</option><option selected>Medium</option><option>High</option><option>Aggressive</option></select></div>
+                <div class="col-md-6"><label class="form-label">Investment Horizon</label><select class="form-select" name="investmentHorizon"><option>1 Year</option><option>3 Years</option><option selected>5 Years</option><option>10 Years</option></select></div>
+                <div class="col-md-6"><label class="form-label">Optimization Method</label><select class="form-select" name="optimizationMethod"><option>Classical</option><option>Quantum</option><option selected>Hybrid</option></select></div>
+                <div class="col-12"><label class="form-label">Asset Classes</label><div id="assetUniverseOptions" class="asset-grid"></div></div>
+                <div class="col-md-6"><label class="form-label">Maximum Asset Weight</label><input class="form-control" name="maxAssetWeight" type="number" value="25"></div>
+                <div class="col-md-6"><label class="form-label">Minimum Asset Weight</label><input class="form-control" name="minAssetWeight" type="number" value="3"></div>
+                <div class="col-md-6"><label class="form-label">Sector Exposure</label><input class="form-control" name="sectorExposure" type="number" value="35"></div>
+                <div class="col-md-6"><label class="form-label">Liquidity</label><input class="form-control" name="liquidity" type="number" value="0.2" step="0.1"></div>
+                <div class="col-md-6"><label class="form-label">Transaction Cost</label><input class="form-control" name="transactionCost" type="number" value="0.5" step="0.1"></div>
+                <div class="col-md-6"><label class="form-label">ESG Preference</label><select class="form-select" name="esgPreference"><option>None</option><option selected>Moderate</option><option>High</option></select></div>
+                <div class="col-md-6"><label class="form-label">Carbon Limit</label><input class="form-control" name="carbonLimit" type="number" value="15"></div>
+                <div class="col-md-6"><label class="form-label">Tax Preference</label><select class="form-select" name="taxPreference"><option>Tax Efficient</option><option selected>Balanced</option><option>Tax Aware</option></select></div>
+                <div class="col-12"><button class="btn btn-primary" type="submit">Submit Portfolio</button></div>
+            </form>
+        </div>
+    </div>
+    <div class="col-lg-4">
+        <div class="glass-card p-4 rounded-4">
+            <h5 class="fw-semibold mb-3">Workflow Guidance</h5>
+            <ul class="list-unstyled mb-0 text-muted">
+                <li class="mb-3"><strong>Mandate Definition</strong><br>Objective, risk profile, and horizon shape each allocation decision.</li>
+                <li class="mb-3"><strong>Constraint Framework</strong><br>Liquidity, sector, carbon, and tax preferences preserve institutional realism.</li>
+                <li><strong>Execution Readiness</strong><br>The builder sends structured JSON to the optimization API.</li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Reports</h2>
+<p>Download generated portfolio and risk reports.</p>
+<ul>
+  <li><a href="/api/reports/1/download?format=pdf" class="btn btn-outline-light btn-sm">Download Portfolio Report (PDF)</a></li>
+  <li><a href="/api/reports/1/download?format=csv" class="btn btn-outline-light btn-sm">Download Allocation CSV</a></li>
+</ul>
+{% endblock %}

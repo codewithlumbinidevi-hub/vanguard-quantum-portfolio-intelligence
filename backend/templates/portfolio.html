@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% block content %}
+<h2>Portfolios</h2>
+<div class="list-group mt-3">
+  {% for run in runs %}
+  <a href="/portfolio/{{ run.id }}" class="list-group-item list-group-item-action bg-dark-alt text-white">
+    <div class="d-flex justify-content-between">
+      <div>{{ run.profile_name }}</div>
+      <div>{{ run.created_at }}</div>
+    </div>
+  </a>
+  {% endfor %}
+</div>
+{% endblock %}

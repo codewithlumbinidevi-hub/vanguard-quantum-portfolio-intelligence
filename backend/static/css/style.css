@@ -1,0 +1,11 @@
+:root{--bg:#0b0f14;--panel:#0e1419;--muted:#9aa6b2}
+body{background:var(--bg);color:#e6eef6}
+.navbar-brand{font-weight:700}
+.sidebar{background:transparent}
+.bg-dark-alt{background:#0f1720}
+.card{border:0}
+.card h5{font-weight:600}
+img{max-width:100%}
+/* small responsive tweaks */
+@media (max-width:767px){.sidebar{display:none}}
+pre{white-space:pre-wrap;background:#071018;padding:1rem;border-radius:6px}

@@ -1,0 +1,117 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h4>Q-MAT (Quantum Multi-Asset Terminal)</h4>
+        <small class="text-muted mono">vanguard-challenge | hybrid-qaoa-architecture</small>
+    </div>
+    <button id="runOptBtn" class="btn-exec">⚡ Execute Pipeline</button>
+</div>
+
+<div id="loadingAlert" class="alert-quantum">
+    <span class="spinner-border spinner-border-sm" style="width: 1rem; height: 1rem; margin-right: 8px;"></span>
+    PROCESSING: Running GBM Monte Carlo → Black-Litterman → 78-Qubit QUBO Mapping → Qiskit Circuit Generation...
+</div>
+
+<div class="row">
+    <div class="col-md-9">
+        <div class="panel">
+            <div class="panel-header">
+                <span>// EXECUTION HISTORY</span>
+                <span>{{ runs|length }} Records</span>
+            </div>
+            <div class="panel-body" style="padding: 0;">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Profile Name</th>
+                            <th>Status</th>
+                            <th class="text-end">Exp. Return</th>
+                            <th class="text-end">Volatility</th>
+                            <th class="text-end">Sharpe</th>
+                            <th class="text-end">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for run in runs %}
+                        <tr>
+                            <td class="mono">#{{ run.id }}</td>
+                            <td class="text-bright">{{ run.profile_name }}</td>
+                            <td><span class="badge-active">{{ run.status }}</span></td>
+                            <td class="text-end mono text-success">{{ ((run.metrics.get('expected_return', 0) if run.metrics else 0) * 100) | round(2) }}%</td>
+                            <td class="text-end mono text-warning">{{ ((run.metrics.get('expected_volatility', 0) if run.metrics else 0) * 100) | round(2) }}%</td>
+                            <td class="text-end mono text-bright">{{ (run.metrics.get('sharpe_ratio', 0) if run.metrics else 0) | round(4) }}</td>
+                            <td class="text-end"><a href="/portfolio/{{ run.id }}" class="btn-ghost">INSPECT →</a></td>
+                        </tr>
+                        {% else %}
+                        <tr>
+                            <td colspan="7" class="text-center text-muted" style="padding: 30px;">No optimizations executed. Initialize pipeline.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="panel">
+            <div class="panel-header">// SYSTEM SPECS</div>
+            <div class="panel-body" style="padding: 0;">
+                <table>
+                    <tbody>
+                        <tr><td class="mono text-muted">Qubits</td><td class="mono text-bright text-end">78</td></tr>
+                        <tr><td class="mono text-muted">Encoding</td><td class="mono text-bright text-end">6-Bit Binary</td></tr>
+                        <tr><td class="mono text-muted">Hamiltonian</td><td class="mono text-bright text-end">Ising</td></tr>
+                        <tr><td class="mono text-muted">QAOA Layers</td><td class="mono text-bright text-end">p=3</td></tr>
+                        <tr><td class="mono text-muted">Polisher</td><td class="mono text-bright text-end">SLSQP</td></tr>
+                        <tr><td class="mono text-muted">Database</td><td class="mono text-bright text-end">PostgreSQL</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.getElementById('runOptBtn').addEventListener('click', async () => {
+        const btn = document.getElementById('runOptBtn');
+        const alert = document.getElementById('loadingAlert');
+        
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm" style="width: 1rem; height: 1rem; margin-right: 8px;"></span> EXECUTING...';
+        alert.style.display = 'block';
+
+        try {
+            const response = await fetch('/api/optimize', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    profile_name: 'Vanguard Conservative Run', 
+                    lambda: 5.0, 
+                    min_return: 0.07, 
+                    max_turnover: 0.15 
+                })
+            });
+
+            if (response.ok) {
+                window.location.reload();
+            } else {
+                alert('Optimization failed. Check server logs.');
+                btn.disabled = false;
+                btn.innerHTML = '⚡ Execute Pipeline';
+                alert.style.display = 'none';
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            btn.disabled = false;
+            btn.innerHTML = '⚡ Execute Pipeline';
+            alert.style.display = 'none';
+        }
+    });
+</script>
+{% endblock %}

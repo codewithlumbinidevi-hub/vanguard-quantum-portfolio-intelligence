@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+{% block title %}Analytics | Quantum Portfolio Optimization{% endblock %}
+{% block content %}
+<div class="row g-4">
+    <div class="col-12">
+        <div class="glass-card p-4 rounded-4">
+            <h2 class="fw-bold mb-2">Analytics Workspace</h2>
+            <p class="text-muted mb-0">Review efficient frontier profiles, risk contribution patterns, and scenario outputs to evaluate portfolio resilience.</p>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="glass-card p-4 rounded-4">
+            <h5 class="fw-semibold mb-3">Efficient Frontier</h5>
+            <canvas id="frontierChart" height="220"></canvas>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="glass-card p-4 rounded-4">
+            <h5 class="fw-semibold mb-3">Correlation Heatmap</h5>
+            <canvas id="heatmapChart" height="220"></canvas>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="glass-card p-4 rounded-4">
+            <h5 class="fw-semibold mb-3">Risk Contribution</h5>
+            <canvas id="riskContributionChart" height="220"></canvas>
+        </div>
+    </div>
+    <div class="col-lg-6">
+        <div class="glass-card p-4 rounded-4">
+            <h5 class="fw-semibold mb-3">Sector Allocation</h5>
+            <canvas id="sectorChart" height="220"></canvas>
+        </div>
+    </div>
+    <div class="col-12">
+        <div class="glass-card p-4 rounded-4">
+            <h5 class="fw-semibold mb-3">AI Insights Panel</h5>
+            <div id="insightsPanel" class="insights-grid"></div>
+        </div>
+    </div>
+    <div class="col-12">
+        <div class="glass-card p-4 rounded-4">
+            <h5 class="fw-semibold mb-3">Real-World Limitations</h5>
+            <div class="row g-3">
+                <div class="col-md-6 col-lg-4">
+                    <div class="constraint-card p-3 rounded-3"><strong>High Computational Complexity</strong><p class="text-muted mb-0">Quantum methods reduce combinatorial overhead for large-scale scenario exploration.</p></div>
+                </div>
+                <div class="col-md-6 col-lg-4">
+                    <div class="constraint-card p-3 rounded-3"><strong>Dynamic Markets</strong><p class="text-muted mb-0">Adaptive re-optimization adjusts to changing regimes and data refreshes.</p></div>
+                </div>
+                <div class="col-md-6 col-lg-4">
+                    <div class="constraint-card p-3 rounded-3"><strong>Historical Data Dependency</strong><p class="text-muted mb-0">Forward-looking stress tests supplement back-tested assumptions.</p></div>
+                </div>
+                <div class="col-md-6 col-lg-4">
+                    <div class="constraint-card p-3 rounded-3"><strong>Correlation Instability</strong><p class="text-muted mb-0">Regularized covariance estimates improve resilience under regime shifts.</p></div>
+                </div>
+                <div class="col-md-6 col-lg-4">
+                    <div class="constraint-card p-3 rounded-3"><strong>Transaction Costs</strong><p class="text-muted mb-0">Soft penalties and liquidity mapping manage turnover efficiency.</p></div>
+                </div>
+                <div class="col-md-6 col-lg-4">
+                    <div class="constraint-card p-3 rounded-3"><strong>Liquidity Constraints</strong><p class="text-muted mb-0">Minimum participation constraints support realistic execution design.</p></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
