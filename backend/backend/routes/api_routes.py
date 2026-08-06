@@ -186,6 +186,12 @@ def markets():
     return success(get_market_intelligence())
 
 
+@api_bp.route('/market/live', methods=['GET'])
+def market_live():
+    data = get_market_intelligence()
+    return success(data.get('telemetry', {}))
+
+
 @api_bp.route('/portfolio', methods=['GET'])
 def portfolio_profile():
     return success(get_portfolio_profile())

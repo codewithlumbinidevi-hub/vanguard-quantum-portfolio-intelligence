@@ -96,27 +96,97 @@ def get_portfolio_profile():
         'holdings': holdings
     }
 
+# In-Memory Cache for Live Market Data
+_MARKET_CACHE = {'timestamp': 0, 'data': None}
+
 def get_market_intelligence():
-    return {
-        'timestamp': datetime.utcnow().isoformat() + 'Z',
-        'marketTicker': [
-            {'label': 'US 10Y', 'value': '4.28%', 'change': -0.04},
-            {'label': 'CPI YoY', 'value': '3.1%', 'change': -0.2},
-            {'label': 'VIX', 'value': '14.62', 'change': -0.83},
-            {'label': 'Gold', 'value': '$2,418', 'change': 0.74},
-            {'label': 'Fed Funds', 'value': '5.00%', 'change': 0.0},
-            {'label': 'Fear & Greed', 'value': '68 Greed', 'change': 4.0},
-            {'label': 'DXY', 'value': '103.4', 'change': -0.21},
-            {'label': 'BTC', 'value': '$68,940', 'change': 2.31}
-        ],
-        'livePrices': [
-            {'symbol': 'AAPL', 'price': 191.32, 'change': 0.82, 'trend': 'bullish'},
-            {'symbol': 'MSFT', 'price': 370.14, 'change': 1.02, 'trend': 'bullish'},
-            {'symbol': 'NVDA', 'price': 124.88, 'change': -0.34, 'trend': 'neutral'},
-            {'symbol': 'SPY', 'price': 545.90, 'change': 0.56, 'trend': 'bullish'},
-            {'symbol': 'BTC', 'price': 74800.11, 'change': 2.4, 'trend': 'bullish'}
-        ]
+    import urllib.request
+    import json
+    import time
+
+    now = time.time()
+    if _MARKET_CACHE['data'] and (now - _MARKET_CACHE['timestamp'] < 60):
+        return _MARKET_CACHE['data']
+
+    symbols_map = [
+        ('sp500', 'S&P 500', '^GSPC'),
+        ('nasdaq', 'Nasdaq', '^IXIC'),
+        ('dow', 'Dow Jones', '^DJI'),
+        ('nifty', 'Nifty 50', '^NSEI'),
+        ('sensex', 'Sensex', '^BSESN'),
+        ('gold', 'Gold', 'GC=F'),
+        ('silver', 'Silver', 'SI=F'),
+        ('btc', 'Bitcoin', 'BTC-USD'),
+        ('eth', 'Ethereum', 'ETH-USD'),
+        ('usdinr', 'USD/INR', 'USDINR=X'),
+        ('us10y', 'US 10Y Yield', '^TNX'),
+        ('oil', 'Crude Oil', 'CL=F'),
+        ('vix', 'VIX Index', '^VIX')
+    ]
+
+    headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'}
+    ticker_items = []
+    live_prices = []
+    
+    macro_telemetry = {
+        'us10yYield': 4.15,
+        'us10yChange': -0.04,
+        'fedRate': 4.50,
+        'rbiRepoRate': 6.50,
+        'cpiInflation': 2.4,
+        'vixIndex': 14.22,
+        'vixChange': -0.85,
+        'goldPrice': 2842.50,
+        'goldChange': 0.65,
+        'oilPrice': 74.80,
+        'oilChange': -1.12,
+        'sp500': 5842.10,
+        'sp500Change': 0.45,
+        'nifty50': 24850.00,
+        'niftyChange': 0.85,
+        'btcUsd': 96450.00,
+        'btcChange': 2.85,
+        'lastUpdated': datetime.utcnow().isoformat() + 'Z'
     }
+
+    for key, label, sym in symbols_map:
+        try:
+            url = f'https://query1.finance.yahoo.com/v8/finance/chart/{sym}?interval=1d&range=2d'
+            req = urllib.request.Request(url, headers=headers)
+            with urllib.request.urlopen(req, timeout=4) as r:
+                j = json.loads(r.read())
+                meta = j['chart']['result'][0]['meta']
+                p = meta.get('regularMarketPrice')
+                prev = meta.get('chartPreviousClose', meta.get('previousClose', p))
+                chg = round(((p - prev) / prev * 100.0), 2) if prev and p else 0.0
+                
+                fmt_val = f"${p:,.2f}" if sym in ['GC=F', 'SI=F', 'CL=F', 'BTC-USD', 'ETH-USD'] else (f"{p:,.2f}%" if sym == '^TNX' else f"{p:,.2f}")
+                ticker_items.append({'label': label, 'value': fmt_val, 'change': chg})
+                live_prices.append({'symbol': label, 'price': round(p, 2), 'change': chg, 'trend': 'bullish' if chg >= 0 else 'bearish'})
+                
+                # Update macro telemetry payload
+                if sym == '^TNX': macro_telemetry['us10yYield'] = round(p, 2); macro_telemetry['us10yChange'] = chg
+                elif sym == '^VIX': macro_telemetry['vixIndex'] = round(p, 2); macro_telemetry['vixChange'] = chg
+                elif sym == 'GC=F': macro_telemetry['goldPrice'] = round(p, 2); macro_telemetry['goldChange'] = chg
+                elif sym == 'CL=F': macro_telemetry['oilPrice'] = round(p, 2); macro_telemetry['oilChange'] = chg
+                elif sym == '^GSPC': macro_telemetry['sp500'] = round(p, 2); macro_telemetry['sp500Change'] = chg
+                elif sym == '^NSEI': macro_telemetry['nifty50'] = round(p, 2); macro_telemetry['niftyChange'] = chg
+                elif sym == 'BTC-USD': macro_telemetry['btcUsd'] = round(p, 2); macro_telemetry['btcChange'] = chg
+        except Exception:
+            ticker_items.append({'label': label, 'value': 'Live API Pending', 'change': 0.0})
+
+    ticker_items.append({'label': 'RBI Repo Rate', 'value': '6.50%', 'change': 0.0})
+
+    result = {
+        'timestamp': datetime.utcnow().isoformat() + 'Z',
+        'marketTicker': ticker_items,
+        'livePrices': live_prices,
+        'telemetry': macro_telemetry
+    }
+    
+    _MARKET_CACHE['timestamp'] = now
+    _MARKET_CACHE['data'] = result
+    return result
 
 def get_news_feed():
     return [

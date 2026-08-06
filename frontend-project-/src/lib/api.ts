@@ -575,22 +575,17 @@ export const api = {
   },
 
   getMarkets: async () => {
+    try {
+      const res = await fetch('http://127.0.0.1:5000/api/markets');
+      if (res.ok) {
+        const json = await res.json();
+        if (json && json.data) return json.data;
+      }
+    } catch (e) {}
+
     return {
-      marketTicker: [
-        { label: 'S&P 500', value: '5,842.10', change: 0.45 },
-        { label: 'Nifty 50', value: '24,850.00', change: 0.85 },
-        { label: 'Spot Gold', value: '$2,842.50', change: 0.65 },
-        { label: 'Bitcoin', value: '$96,450.00', change: 2.85 },
-        { label: 'US 10Y Yield', value: '4.15%', change: -0.04 },
-        { label: 'RBI Repo Rate', value: '6.50%', change: 0.00 }
-      ],
-      livePrices: [
-        { symbol: 'RELIANCE', price: 2950, change: 1.25, trend: 'bullish' },
-        { symbol: 'TCS', price: 4120, change: 0.85, trend: 'bullish' },
-        { symbol: 'HDFCBANK', price: 1680, change: -0.45, trend: 'bearish' },
-        { symbol: 'NVDA', price: 138.5, change: 3.42, trend: 'bullish' },
-        { symbol: 'GOLDBEES', price: 62.5, change: 0.65, trend: 'bullish' }
-      ]
+      marketTicker: [],
+      livePrices: []
     };
   },
 
