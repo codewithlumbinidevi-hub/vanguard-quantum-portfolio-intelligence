@@ -26,12 +26,12 @@ def solve_hybrid(Q, n_qubits, step, data, config):
     gamma = np.random.uniform(0, np.pi, p_layers)
     beta = np.random.uniform(0, np.pi, p_layers)
     
-    print(f"⚡ Initializing QAOA with p={p_layers} layers...")
+    print(f"[QAOA] Initializing QAOA with p={p_layers} layers...")
     print(f"   Initial Gammas: {np.round(gamma, 4)}")
     print(f"   Initial Betas:  {np.round(beta, 4)}")
     
     # STAGE 1: QUANTUM
-    print(f"⚡ Running Quantum Annealing Simulator ({n_qubits}-qubit)...")
+    print(f"[QAOA] Running Quantum Annealing Simulator ({n_qubits}-qubit)...")
     sampler = neal.SimulatedAnnealingSampler()
     
     # ==========================================
@@ -117,15 +117,25 @@ def solve_hybrid(Q, n_qubits, step, data, config):
         quantum_weights[i] = sum(asset_bits[j] * (2**j) for j in range(bits)) * step
     quantum_weights = quantum_weights / np.sum(quantum_weights)
     
-    # STAGE 2: CLASSICAL POLISH
-    print("🛡️ Applying Classical Strict-Constrained Polish (Pseudo-Huber Loss)...")
-    def objective(w): return -np.dot(w, mu) + config['LAMBDA_RISK'] * np.dot(w, np.dot(Sigma, w))
+    # STAGE 2: CLASSICAL POLISH (Pseudo-Huber Loss Surrogate §7.2)
+    print("[SLSQP] Applying Classical Strict-Constrained Polish (Pseudo-Huber Loss §7.2)...")
+    
+    # Pseudo-Huber surrogate function for L1 turnover: phi_delta(z) = delta^2 * (sqrt(1 + (z/delta)^2) - 1)
+    delta_huber = 1e-4
+    def pseudo_huber(z):
+        return (delta_huber**2) * (np.sqrt(1.0 + (z / delta_huber)**2) - 1.0)
+    
+    def objective(w):
+        risk_term = config['LAMBDA_RISK'] * np.dot(w, np.dot(Sigma, w))
+        return_term = -np.dot(w, mu)
+        turnover_penalty = config.get('P_turnover', 1.0) * np.sum(pseudo_huber(w - w0))
+        return risk_term + return_term + turnover_penalty
 
-    # FIX 2: Removed the hard 7% return constraint. It is handled as a soft penalty in the objective.
+    # Hard constraints using exact Huber turnover surrogate and non-linear bounds
     strict_constraints = [
         {'type': 'eq', 'fun': lambda w: np.sum(w) - 1.0},
-        {'type': 'ineq', 'fun': lambda w: config['MAX_TURNOVER'] - np.sum(np.sqrt((w - w0)**2 + 1e-6))},
-        {'type': 'ineq', 'fun': lambda w: config['EQUITY_STRESS_CAP'] - np.sum(w[sectors['Equities']])}
+        {'type': 'ineq', 'fun': lambda w: config['MAX_TURNOVER'] - np.sum(pseudo_huber(w - w0))},
+        {'type': 'ineq', 'fun': lambda w: config['EQUITY_STRESS_CAP'] - np.sum(w[sectors.get('Equities', [])])}
     ]
     for sec, indices in sectors.items():
         strict_constraints.append({'type': 'ineq', 'fun': lambda w, idx=indices: config['MAX_SECTOR'] - np.sum(w[idx])})
@@ -137,7 +147,7 @@ def solve_hybrid(Q, n_qubits, step, data, config):
     polish_result = minimize(objective, w_init, method='SLSQP', bounds=bounds, constraints=strict_constraints, options={'maxiter': 1000, 'ftol': 1e-9})    
     
     if not polish_result.success or polish_result.x is None:
-        print("⚠️ SLSQP Polish failed to find feasible solution. Reverting to Quantum Baseline.")
+        print("[SLSQP] Polish failed to find feasible solution. Reverting to Quantum Baseline.")
         final_polished_weights = quantum_weights
     else:
         final_polished_weights = polish_result.x

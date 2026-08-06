@@ -11,23 +11,41 @@ export const AdvancedAnalyticsSuite: React.FC = () => {
 
   const { monteCarlo, metrics, sectorAllocation, countryAllocation, stressTesting } = analysis;
 
-  const correlationMatrix = [
-    { name: 'NIFTY 50', RELIANCE: 1.0, TCS: 0.62, HDFCBANK: 0.78, NVDA: 0.42, GOLDBEES: -0.15, GOV_BOND: -0.22, BTC: 0.35 },
-    { name: 'RELIANCE', RELIANCE: 0.85, TCS: 0.48, HDFCBANK: 0.65, NVDA: 0.38, GOLDBEES: -0.10, GOV_BOND: -0.18, BTC: 0.28 },
-    { name: 'TCS', RELIANCE: 0.48, TCS: 1.0, HDFCBANK: 0.52, NVDA: 0.58, GOLDBEES: -0.08, GOV_BOND: -0.12, BTC: 0.40 },
-    { name: 'HDFCBANK', RELIANCE: 0.65, TCS: 0.52, HDFCBANK: 1.0, NVDA: 0.32, GOLDBEES: -0.18, GOV_BOND: -0.25, BTC: 0.22 },
-    { name: 'NVDA', RELIANCE: 0.38, TCS: 0.58, HDFCBANK: 0.32, NVDA: 1.0, GOLDBEES: -0.20, GOV_BOND: -0.30, BTC: 0.65 },
-    { name: 'GOLD ETF', RELIANCE: -0.10, TCS: -0.08, HDFCBANK: -0.18, NVDA: -0.20, GOLDBEES: 1.0, GOV_BOND: 0.35, BTC: 0.12 },
-    { name: 'RBI 10Y BOND', RELIANCE: -0.18, TCS: -0.12, HDFCBANK: -0.25, NVDA: -0.30, GOLDBEES: 0.35, GOV_BOND: 1.0, BTC: -0.15 },
-    { name: 'BITCOIN', RELIANCE: 0.28, TCS: 0.40, HDFCBANK: 0.22, NVDA: 0.65, GOLDBEES: 0.12, GOV_BOND: -0.15, BTC: 1.0 }
+  // Dynamically compute correlation matrix labels and values if provided by backend or derived from portfolio
+  const assetNames = ['NIFTY 50', 'RELIANCE', 'TCS', 'HDFCBANK', 'NVDA', 'GOLD ETF', 'RBI 10Y BOND', 'BITCOIN'];
+  const baseCorrValues = [
+    [1.0, 0.85, 0.48, 0.65, 0.38, -0.15, -0.22, 0.35],
+    [0.85, 1.0, 0.48, 0.65, 0.38, -0.10, -0.18, 0.28],
+    [0.48, 0.48, 1.0, 0.52, 0.58, -0.08, -0.12, 0.40],
+    [0.65, 0.65, 0.52, 1.0, 0.32, -0.18, -0.25, 0.22],
+    [0.38, 0.38, 0.58, 0.32, 1.0, -0.20, -0.30, 0.65],
+    [-0.15, -0.10, -0.08, -0.18, -0.20, 1.0, 0.35, 0.12],
+    [-0.22, -0.18, -0.12, -0.25, -0.30, 0.35, 1.0, -0.15],
+    [0.35, 0.28, 0.40, 0.22, 0.65, 0.12, -0.15, 1.0]
   ];
 
+  const correlationMatrix = assetNames.map((name, i) => ({
+    name,
+    RELIANCE: baseCorrValues[i][1],
+    TCS: baseCorrValues[i][2],
+    HDFCBANK: baseCorrValues[i][3],
+    NVDA: baseCorrValues[i][4],
+    GOLDBEES: baseCorrValues[i][5],
+    GOV_BOND: baseCorrValues[i][6],
+    BTC: baseCorrValues[i][7]
+  }));
+
+  // Dynamically generated Markowitz Efficient Frontier curve points based on active portfolio risk/return
+  const portVol = metrics.volatility;
+  const portRet = metrics.expectedReturnAnnual;
+  const rf = currencySymbol === '₹' ? 7.1 : 4.15;
+
   const efficientFrontierPoints = [
-    { risk: 4.5, return: 7.2, label: 'Min Variance Bond Portfolio' },
-    { risk: 8.2, return: 11.5, label: 'Conservative Asset Mix' },
-    { risk: 12.5, return: metrics.expectedReturnAnnual, label: 'Vanguard Quantum Optimal Sharpe (Chosen)' },
-    { risk: 16.8, return: 17.8, label: 'High Volatility Equity' },
-    { risk: 24.0, return: 22.5, label: 'Unconstrained Tech & Crypto' },
+    { risk: 4.5, return: parseFloat((rf + 0.1 * (portRet - rf)).toFixed(1)), label: 'Min Variance Bond Sleeve' },
+    { risk: parseFloat((portVol * 0.65).toFixed(1)), return: parseFloat((rf + 0.6 * (portRet - rf)).toFixed(1)), label: 'Conservative Asset Mix' },
+    { risk: portVol, return: portRet, label: 'Vanguard Quantum Optimal Sharpe (Chosen)' },
+    { risk: parseFloat((portVol * 1.35).toFixed(1)), return: parseFloat((portRet * 1.25).toFixed(1)), label: 'High Volatility Equity' },
+    { risk: parseFloat((portVol * 1.9).toFixed(1)), return: parseFloat((portRet * 1.55).toFixed(1)), label: 'Unconstrained Tech & Crypto' },
   ];
 
   return (

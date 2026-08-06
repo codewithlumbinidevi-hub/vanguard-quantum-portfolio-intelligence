@@ -20,9 +20,15 @@ def build_qubo(data, config):
     Q      = np.zeros((n_vars, n_vars))
 
     LAMBDA_RISK   = config['LAMBDA_RISK']
-    P_return      = config['P_return']
-    P_budget      = config['P_budget']
-    P_sector      = config['P_sector']
+    
+    # Section 5.3 Dynamic Spectral Penalty Scaling (P_bud > lambda_max, P_ret > lambda_max)
+    eigvals = np.linalg.eigvalsh(Sigma)
+    lambda_max = float(np.max(eigvals)) if len(eigvals) > 0 else 1.0
+    spectral_floor = max(10.0, 2.0 * lambda_max)
+    
+    P_return      = max(config.get('P_return', 50.0), spectral_floor)
+    P_budget      = max(config.get('P_budget', 100.0), spectral_floor)
+    P_sector      = max(config.get('P_sector', 20.0), spectral_floor * 0.5)
     P_turnover    = config['P_turnover']
     MIN_RETURN    = config['MIN_RETURN']
     MAX_SECTOR    = config['MAX_SECTOR']

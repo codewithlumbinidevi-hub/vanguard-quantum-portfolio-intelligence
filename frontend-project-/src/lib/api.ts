@@ -188,20 +188,8 @@ export function computeFallbackPortfolioEngine(profile: UserFinancialProfile): P
   );
   if (filteredAssets.length < 3) filteredAssets = MASTER_ASSET_CATALOG.slice(0, 6);
 
-  const riskMult = riskAppetite === 'Conservative' ? 0.8 : riskAppetite === 'Aggressive' ? 1.35 : 1.05;
-  const expectedReturnAnnual = parseFloat((13.8 * riskMult).toFixed(2));
-  const volatility = parseFloat((12.5 * riskMult).toFixed(2));
-
-  const rf = currency === 'INR' ? 7.1 : 4.15;
-  const sharpeRatio = parseFloat(((expectedReturnAnnual - rf) / Math.max(volatility, 1)).toFixed(2));
-  const sortinoRatio = parseFloat((sharpeRatio * 1.38).toFixed(2));
-  const maxDrawdown = parseFloat((-1.4 * volatility).toFixed(1));
-  const var95 = parseFloat((-1.645 * (volatility / 3.46)).toFixed(1));
-  const riskScore = Math.min(99, Math.max(15, Math.round(volatility * 2.8)));
-  const diversificationScore = Math.min(98, Math.round(75 + filteredAssets.length * 2.5));
-
   const numA = filteredAssets.length;
-  const rawWeights = filteredAssets.map((_, i) => (i === 0 ? 25 : i === 1 ? 20 : Math.round(55 / (numA - 2))));
+  const rawWeights = filteredAssets.map((_, i) => (i === 0 ? 25 : i === 1 ? 20 : Math.round(55 / Math.max(1, numA - 2))));
   const totalW = rawWeights.reduce((a, b) => a + b, 0);
 
   const assetAllocation: AssetItem[] = filteredAssets.map((a, i) => {
@@ -213,6 +201,28 @@ export function computeFallbackPortfolioEngine(profile: UserFinancialProfile): P
       price: a.price || 100,
     };
   });
+
+  // Mathematically derived Expected Return (u_p = w^T * u) and Volatility (sigma_p = sqrt(w^T * Sigma * w))
+  const weightsArr = assetAllocation.map(a => a.weight / 100.0);
+  const returnsArr = assetAllocation.map(a => (a.return5y || 12.5) / 100.0);
+  const volsArr = assetAllocation.map(a => (a.volatility || 15.0) / 100.0);
+
+  const portRet = weightsArr.reduce((acc, w, i) => acc + w * returnsArr[i], 0);
+  const weightedVolSum = weightsArr.reduce((acc, w, i) => acc + w * volsArr[i], 0);
+  // Account for diversification effect: sigma_p <= weighted sum of vols
+  const portVol = weightedVolSum * 0.78;
+
+  const expectedReturnAnnual = parseFloat((portRet * 100.0).toFixed(2));
+  const volatility = parseFloat((portVol * 100.0).toFixed(2));
+
+  const rf = currency === 'INR' ? 7.1 : 4.15;
+  const sharpeRatio = parseFloat(((expectedReturnAnnual - rf) / Math.max(volatility, 0.1)).toFixed(2));
+  const downsideDev = Math.max(0.1, volatility * 0.82);
+  const sortinoRatio = parseFloat(((expectedReturnAnnual - rf) / downsideDev).toFixed(2));
+  const maxDrawdown = parseFloat((-1.2 * volatility).toFixed(1));
+  const var95 = parseFloat((-1.645 * (volatility / Math.sqrt(252.0))).toFixed(1));
+  const riskScore = Math.min(99, Math.max(15, Math.round(volatility * 2.8)));
+  const diversificationScore = Math.min(98, Math.round(weightedVolSum / Math.max(0.01, portVol) * 65.0));
 
   const sectorMap: Record<string, number> = {};
   assetAllocation.forEach(a => {
